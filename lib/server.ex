@@ -43,6 +43,18 @@ defmodule Pooly.Server do
     {:noreply, %{state | worker_sup: worker_sup, workers: workers}}
   end
 
+  def handle_info({:DOWN, ref, _, _, _}, state = %{monitors: monitors, workers: workers}) do
+    case :ets.match(monitors, {:"$1", ref}) do
+      [[pid]] ->
+        true = :ets.delete(monitors, pid)
+        new_state = %{state | workers: [pid | workers]}
+        {:noreply, new_state}
+
+      [[]] ->
+        {:noreply, state}
+    end
+  end
+
   defp supervisor_spec(mfa) do
     opts = [restart: :temporary]
     supervisor(Pooly.WorkerSupervisor, [mfa], opts)
@@ -82,12 +94,12 @@ defmodule Pooly.Server do
         true = :ets.insert(monitors, {worker, ref})
         {:reply, worker, %{state | workers: rest}}
 
-      [] -
-        {:reply, :noproc, state}
+        [] - {:reply, :noproc, state}
     end
   end
 
   def init([sup, pool_config]) when is_pid(sup) do
+    Process.flag(:trap_exit, true)
     monitors = :ets.new(:monitors, [:private])
     init(pool_config, %State{sup: sup, monitors: monitors})
   end
@@ -104,6 +116,20 @@ defmodule Pooly.Server do
         {:noreply, %{state | workers: [pid | workers]}}
 
       [] ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:EXIT, pid, reason}, state = %{monitors: monitors, workers: workers, worker_sup: worker_sup}) do
+    case :ets.lookup(monitors, pid) do
+      [{pid, ref}] ->
+        true = Process.demonitor(ref)
+        true = :ets.delete(monitors, pid)
+        new_state = %{state | workers: [new_worker(worker_sup) | workers]}
+        {:noreply, new_state}
+      [{}] ->
+         {:noreply, state}
+      _ ->
         {:noreply, state}
     end
   end
