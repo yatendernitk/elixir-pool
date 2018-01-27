@@ -17,7 +17,7 @@ defmodule Pooly do
   end
 
   def start(_type, _args) do
-    pool_config = [mfa: {SampleWorker, :start_link, []}, size: 5]
+    pool_config = [mfa: {Pooly.SampleWorker, :start_link, []}, size: 50000]
     start_pool(pool_config)
   end
 

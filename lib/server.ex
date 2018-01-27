@@ -3,7 +3,7 @@ defmodule Pooly.Server do
   import Supervisor.Spec
 
   defmodule State do
-    defstruct sup: nil, size: nil, mfa: nil
+    defstruct sup: nil, size: nil, mfa: nil, monitors: nil, worker_sup: nil, workers: nil
   end
 
   #######
@@ -40,7 +40,7 @@ defmodule Pooly.Server do
   def handle_info(:start_worker_supervisor, state = %{sup: sup, mfa: mfa, size: size}) do
     {:ok, worker_sup} = Supervisor.start_child(sup, supervisor_spec(mfa))
     workers = prepopulate(size, worker_sup)
-    {:noreply, %{state | worker_sup: worker_sup, wokers: workers}}
+    {:noreply, %{state | worker_sup: worker_sup, workers: workers}}
   end
 
   defp supervisor_spec(mfa) do
@@ -82,7 +82,7 @@ defmodule Pooly.Server do
         true = :ets.insert(monitors, {worker, ref})
         {:reply, worker, %{state | workers: rest}}
 
-      [] ->
+      [] -
         {:reply, :noproc, state}
     end
   end

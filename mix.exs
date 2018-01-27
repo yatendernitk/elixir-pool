@@ -5,7 +5,8 @@ defmodule Pooly.Mixfile do
     [
       app: :pooly,
       version: "0.1.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.6.0",
+      build_embedded: Mix.env == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -14,7 +15,8 @@ defmodule Pooly.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      [applications: [:logger], mod: {Pooly, []}]
+      applications: [:logger],
+      mod: {Pooly, []}
     ]
   end
 
