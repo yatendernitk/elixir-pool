@@ -5,19 +5,6 @@ defmodule Pooly do
   Documentation for Pooly.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> Pooly.hello
-      :world
-
-  """
-  def hello do
-    :world
-  end
-
   def start(_type, _args) do
     pools_config = [
       [name: "Pool1", mfa: {Pooly.SampleWorker, :start_link, []}, size: 5],
