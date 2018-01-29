@@ -31,6 +31,7 @@ defmodule Pooly.Server do
   def init(pools_config) do
     pools_config
     |> Enum.each(fn pool_config -> send(self(), {:start_pool, pool_config}) end)
+    {:ok, pools_config}
   end
 
   def init([{:mfa, mfa} | rest], state) do
@@ -70,6 +71,7 @@ defmodule Pooly.Server do
 
   def handle_info({:start_pool, pool_config}, state) do
     {:ok, _pool_sup} = Supervisor.start_child(Pooly.PoolsSupervisor, supervisor_spec(pool_config))
+    IO.inspect state
     {:noreply, state}
   end
 
@@ -147,6 +149,6 @@ defmodule Pooly.Server do
 
   defp supervisor_spec(pool_config) do
     opts = [id: :"#{pool_config[:name]}Supervisor"]
-    supervisor(Pooly.WorkerSupervisor, [pool_config], opts)
+    supervisor(Pooly.PoolSupervisor, [pool_config], opts)
   end
 end

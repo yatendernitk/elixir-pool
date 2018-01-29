@@ -5,6 +5,10 @@ defmodule Pooly.SampleWorker do
     GenServer.start_link(__MODULE__, :ok, [])
   end
 
+  def init(state) do
+    {:ok, state}
+  end
+
   def stop(pid) do
     GenServer.call(pid, :stop)
   end

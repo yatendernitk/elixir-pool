@@ -11,7 +11,6 @@ defmodule Pooly do
       [name: "Pool2", mfa: {Pooly.SampleWorker, :start_link, []}, size: 3],
       [name: "Pool3", mfa: {Pooly.SampleWorker, :start_link, []}, size: 2]
     ]
-
     start_pools(pools_config)
   end
 
